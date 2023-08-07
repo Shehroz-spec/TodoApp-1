@@ -1,0 +1,101 @@
+﻿@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor Accessor
+<!-- Views/TodoItems/Index.cshtml -->
+@*@page*@
+@model IList<TodoItem>
+
+<h1>Todo List</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Priority1</th>
+            <th>Status</th>
+            <th>Action</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            if (@Accessor.HttpContext.Session.TryGetValue("TodoList", out var todoItemsData))
+            {
+                
+                var Obj = System.Text.Json.JsonSerializer.Deserialize<List<TodoItem>>(todoItemsData);
+
+                foreach (var item in Obj)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Priority</td>
+                        <td>@item.Status</td>
+                        <td>
+                            @Html.ActionLink("Edit","Edit","TodoItems",new {Id=item.Id},new { @class = "btn btn-primary"})
+
+
+                        </td>
+
+                    </tr>
+                }
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Priority</td>
+                        <td>@item.Status</td>
+                        <td>
+                            @Html.ActionLink("Edit","Edit","TodoItems",new {Id=item.Id},new { @class = "btn btn-primary"})
+
+
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+@Html.ActionLink("Create","Create","TodoItems",null,new { @class = "btn btn-primary"})
+@Html.ActionLink("Delete", "DeleteCompletedTasks","TodoItems", null, new { @class = "Delete btn btn-danger" })
+
+<br />
+<br />
+<span>
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert-primary">
+            @TempData["Message"]
+        </div>
+    }
+</span>
+<!-- Include jQuery for making the HTTP request -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("a.Delete").click(function (e) {
+            e.preventDefault();
+            var deleteUrl = $(this).attr("href");
+
+            // Display a confirmation dialog
+            if (confirm("Are you sure you want to delete this task?")) {
+                $.ajax({
+                    url: deleteUrl,
+                    type: "DELETE",
+                    success: function (object) {
+                        alert(object);
+                        window.location.replace("https://localhost:7223")
+
+                    },
+                    error: function () {
+                        alert("Failed to delete the task.");
+                    }
+                });
+            }
+        });
+
+    });
+</script>
